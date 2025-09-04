@@ -1,0 +1,8 @@
+"release: feature":
+  - "/^feat/"
+"release: performance":
+  - "/^perf/"
+"release: bug fix":
+  - "/^fix/"
+"release: document":
+  - "/^docs/"
