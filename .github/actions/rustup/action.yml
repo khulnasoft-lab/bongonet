@@ -50,8 +50,13 @@ runs:
     - name: Install
       shell: bash
       run: |
-        channel=$(grep -E "^channel\s*=" rust-toolchain.toml | sed -n -E 's/^[ \t]*channel[ \t]*=[ \t]*"([^"]*)"[^#]*.*$/\1/p' | tr -d '[:space:]')
-        rustup toolchain install $channel -c rustc -c cargo -c rust-std ${{ inputs.clippy == 'true' && '-c clippy' || '' }} ${{ inputs.fmt == 'true' && '-c rustfmt' || '' }} ${{ inputs.docs == 'true' && '-c rust-docs' || '' }} ${{ inputs.miri == 'true' && '-c miri' || '' }}
+        if [[ -f rust-toolchain.toml ]]; then
+          channel=$(awk -F= '/^[[:space:]]*channel[[:space:]]*=/ {gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2); gsub(/^["'\''']|["'\''']$/,"",$2); print $2; exit}' rust-toolchain.toml || true)
+        fi
+        if [[ -z "${channel:-}" ]]; then
+          channel=stable
+        fi
+        rustup toolchain install "$channel" -c rustc -c cargo -c rust-std ${{ inputs.clippy == 'true' && '-c clippy' || '' }} ${{ inputs.fmt == 'true' && '-c rustfmt' || '' }} ${{ inputs.docs == 'true' && '-c rust-docs' || '' }} ${{ inputs.miri == 'true' && '-c miri' || '' }}
 
     - name: Cache on ${{ github.ref_name }}
       uses: ./.github/actions/rustup/cache
